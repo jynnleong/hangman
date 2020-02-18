@@ -37,6 +37,7 @@ public class HangmanWindow extends JFrame implements ActionListener {
         answer.setPreferredSize(new Dimension(300, 50));
         hint = new JButton("Hint");
         hint.addActionListener(this);
+        this.buttonlist.add(hint);
 
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.add(drawpanel);
@@ -122,6 +123,7 @@ public class HangmanWindow extends JFrame implements ActionListener {
             }
 
             answer.setText(s.toString());
+            click.setEnabled(false);
             checkifguessed();
         }
         else
@@ -142,7 +144,7 @@ public class HangmanWindow extends JFrame implements ActionListener {
             }
 
             answer.setText(sb.toString());
-
+            click.setEnabled(false);
             checkifguessed();
         }
     }
