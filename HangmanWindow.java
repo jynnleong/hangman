@@ -15,6 +15,7 @@ public class HangmanWindow extends JFrame implements ActionListener {
     public ArrayList<String> newwordlist;
     public ArrayList<Integer> randomindex;
     public ArrayList<JButton> buttonlist;
+    public int hintcount;
 
     public HangmanWindow() {
         super("Hangman");
@@ -25,7 +26,11 @@ public class HangmanWindow extends JFrame implements ActionListener {
         this.randomindex = new ArrayList<>();
         this.buttonlist = new ArrayList<>();
 
+        this.hintcount = 0;
+
+        //Initialise GUI 
         gamepanel = new JPanel();
+        //Set drawpanel as an instance of PaintHangman to draw 
         drawpanel = new PaintHangman();
         drawpanel.setBackground(Color.black);
         rightpanel = new JPanel();
@@ -58,6 +63,7 @@ public class HangmanWindow extends JFrame implements ActionListener {
         this.answer.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         this.answer.setHorizontalAlignment(SwingConstants.CENTER);
 
+        // Simple for loop to set each character from the string variable Button as a button
         for (int i = 0; i < button.length(); i++) {
             JButton b = new JButton(Character.toString(button.charAt(i)));
             this.buttonlist.add(b);
@@ -81,15 +87,25 @@ public class HangmanWindow extends JFrame implements ActionListener {
         String selected = evt.getActionCommand();
         JButton click = (JButton)evt.getSource();
 
+        //If user chooses the wrong character, it will go through this if statement
         if(!this.g.word.contains(selected) && !selected.equals("Hint"))
         {
+            //Once the character button is clicked, it will prevent users from clicking it again
             click.setEnabled(false);
             drawpanel.count ++;
+
+            // If the hang count reaches 3, the system gives the user another chance to use the hint
+            if(drawpanel.count == 3){
+                this.hintcount = 0;
+                hint.setEnabled(true);
+            }
             repaint();
             checkifguessed();
         }
+        //This if statement is activated when user chooses "Hint"
         else if(selected.equals("Hint"))
         {
+            this.hintcount += 1;
             Random rand = new Random();
             int index = rand.nextInt(g.word.length());
             while(randomindex.contains(index))
@@ -107,6 +123,7 @@ public class HangmanWindow extends JFrame implements ActionListener {
                 }
             }
 
+        
             for(JButton j : buttonlist)
             {
                 if(j.getText().equals(Character.toString(g.word.charAt(index))))
@@ -114,6 +131,8 @@ public class HangmanWindow extends JFrame implements ActionListener {
                     j.setEnabled(false);
                 }
             }
+            
+
 
             StringBuilder s = new StringBuilder();
 
@@ -123,11 +142,21 @@ public class HangmanWindow extends JFrame implements ActionListener {
             }
 
             answer.setText(s.toString());
-            click.setEnabled(false);
+
+            // If user clicks on hint twice, the hint button will be disabled
+            if(this.hintcount == 2){
+                click.setEnabled(false);
+            }
+            // If system detects that users are struggling, it will give them another hint
+            else if(this.hintcount == 1 && drawpanel.count >= 3){
+                click.setEnabled(false);
+            }
             checkifguessed();
         }
+        //If user chooses the right character, it will go through this if statement
         else
         {   
+            //Simple for loop to iterate through the guessing word to match the character and updates the guessing board
             for(int i = 0; i < g.actualword.length(); i ++)
             {
                 if(Character.toString(g.actualword.charAt(i)).equals(selected))
@@ -144,17 +173,21 @@ public class HangmanWindow extends JFrame implements ActionListener {
             }
 
             answer.setText(sb.toString());
+            //Prevents user from choosing the same character again 
             click.setEnabled(false);
             checkifguessed();
         }
     }
 
+    //This method is called after every button is pressed to check if the user has successfully guessed the word or not
     public void checkifguessed()
     {
         String check = answer.getText();
+        //If the word does not contain any '_', it will activate this if statement, stating that the user has successfully guessed the word
         if(!check.contains("_"))
         {
             int replay = JOptionPane.showConfirmDialog(this.getContentPane(), "CONGRATULATIONS, You Win! Replay?", "Replay?", JOptionPane.YES_NO_OPTION);
+            //If user chooses YES, the game will restart
             if(replay == JOptionPane.YES_OPTION)
             {
                 this.newwordlist = g.getword();
@@ -165,18 +198,21 @@ public class HangmanWindow extends JFrame implements ActionListener {
                 this.answer.setHorizontalAlignment(SwingConstants.CENTER);
                 drawpanel.count = 0;
                 this.randomindex.clear();
+                this.hintcount = 0;
                 for(JButton j : buttonlist)
                 {
                     j.setEnabled(true);
                 }
                 repaint();
             }
+            //If not, the game will be closed
             else
             {
                 JOptionPane.showMessageDialog(this.getContentPane(), "Goodbye");
                 System.exit(0);
             }
         }
+        // If the word still contains '_' and the their 6 chances have been used up, it will show a popup indicating that they lost
         else if(check.contains("_") && drawpanel.count == 6)
         {
             int replay = JOptionPane.showConfirmDialog(this.getContentPane(), "You lose... Replay?", "You lose", JOptionPane.YES_NO_OPTION);
@@ -189,6 +225,7 @@ public class HangmanWindow extends JFrame implements ActionListener {
                 this.answer.setAlignmentX(JLabel.CENTER_ALIGNMENT);
                 this.answer.setHorizontalAlignment(SwingConstants.CENTER);
                 drawpanel.count = 0;
+                this.hintcount = 0;
                 this.randomindex.clear();
                 for(JButton j : buttonlist)
                 {
